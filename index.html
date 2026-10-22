@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WHACK-A-CAT</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px 10px;
+  background: #05050a;
+  color: white;
+  text-align: center;
+  font-family: monospace;
+}
+h1 {
+  color: #ff35dc;
+  font-size: clamp(32px, 8vw, 58px);
+  text-shadow: 4px 4px #4821a1;
+  margin: 10px 0;
+}
+h2 { color: #45f5ff; }
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 20px;
+  color: #ffe65b;
+}
+#board {
+  max-width: 440px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.hole {
+  height: 95px;
+  background: #151528;
+  border: 3px solid #45f5ff;
+  border-radius: 8px;
+  box-shadow: 0 0 9px #45f5ff;
+  font-size: 42px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#start {
+  margin: 24px;
+  padding: 15px 24px;
+  background: #ff35dc;
+  border: 3px solid white;
+  font: bold 18px monospace;
+  cursor: pointer;
+}
+#message { color: #45f5ff; min-height: 24px; }
+</style>
+</head>
+<body>
+<h1>WHACK-A-CAT</h1>
+<h2>INSERT COIN</h2>
+
+<div class="stats">
+  <div>SCORE<br><span id="score">000000</span></div>
+  <div>TIME<br><span id="time">30</span></div>
+</div>
+
+<div id="board"></div>
+<div id="message">PREPARE TO BONK!</div>
+<button id="start">START GAME</button>
+
+<script>
+const board = document.querySelector("#board");
+const scoreText = document.querySelector("#score");
+const timeText = document.querySelector("#time");
+const message = document.querySelector("#message");
+const start = document.querySelector("#start");
+
+let score = 0, time = 30, playing = false;
+let active = -1, spawnTimer, clockTimer;
+
+for (let i = 0; i < 9; i++) {
+  const hole = document.createElement("button");
+  hole.className = "hole";
+  hole.textContent = "⬛";
+  hole.setAttribute("aria-label", "Empty hole");
+  hole.addEventListener("click", () => {
+    if (!playing || i !== active) return;
+    score++;
+    scoreText.textContent = String(score).padStart(6, "0");
+    message.textContent = "BONKKKK!! +1";
+    hideCat();
+  });
+  board.appendChild(hole);
+}
+
+function hideCat() {
+  [...board.children].forEach(h => h.textContent = "⬛");
+  active = -1;
+}
+
+function popCat() {
+  if (!playing) return;
+  hideCat();
+  active = Math.floor(Math.random() * 9);
+  board.children[active].textContent = "🐱";
+  spawnTimer = setTimeout(popCat, Math.max(450, 950 - score * 8));
+}
+
+function endGame() {
+  playing = false;
+  clearTimeout(spawnTimer);
+  clearInterval(clockTimer);
+  hideCat();
+  message.textContent = "GAME OVER! SCORE: " + score;
+  start.textContent = "PLAY AGAIN";
+}
+
+start.addEventListener("click", () => {
+  clearTimeout(spawnTimer);
+  clearInterval(clockTimer);
+  score = 0;
+  time = 30;
+  playing = true;
+  scoreText.textContent = "000000";
+  timeText.textContent = time;
+  message.textContent = "WHACK THAT CAT!";
+  start.textContent = "RESTART";
+  popCat();
+
+  clockTimer = setInterval(() => {
+    timeText.textContent = --time;
+    if (time <= 0) endGame();
+  }, 1000);
+});
+</script>
+</body>
+</html>
