@@ -3,19 +3,14 @@
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  padding: 20px 10px;
-  background-color: #090914;
-  background-image:
-    linear-gradient(#19192b 1px, transparent 1px),
-    linear-gradient(90deg, #19192b 1px, transparent 1px);
-  background-size: 20px 20px;
-  color: #fff4bd;
-  text-align: center;
+  background: #080018;
+  color: #00ffff;
   font-family: "Courier New", monospace;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+  text-shadow: 0 0 6px #00ffff;
 }
-
 body::after {
   content: "";
   position: fixed;
