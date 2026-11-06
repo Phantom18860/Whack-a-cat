@@ -129,4 +129,18 @@ h2 {
   font-weight: bold;
   letter-spacing: 2px;
 }
+.cat-sprite {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  display: block;
+  margin: auto;
+  pointer-events: none;
+}
 
+.hole.active {
+  background: #201044;
+  border-color: #ff35dc;
+  box-shadow: 0 0 20px #ff35dc;
+}
