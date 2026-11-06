@@ -2,105 +2,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WHACK-A-CAT</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WHACK-A-CAT</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<h1>WHACK-A-CAT</h1>
-<h2>INSERT COIN</h2>
+  <h1>WHACK-A-CAT</h1>
+  <h2>INSERT COIN</h2>
 
-<div class="stats">
-  <div>SCORE<br><span id="score">000000</span></div>
-  <div>TIME<br><span id="time">30</span></div>
-</div>
+  <div class="stats">
+    <div>SCORE<br><span id="score">000000</span></div>
+    <div>TIME<br><span id="time">30</span></div>
+  </div>
 
-<div id="board"></div>
-<div id="message">PREPARE TO BONK!</div>
-<button id="start">START GAME</button>
+  <div id="board"></div>
+  <div id="message">PREPARE TO BONK!</div>
+  <button id="start">START GAME</button>
 
-<script>
-const board = document.querySelector("#board");
-const scoreText = document.querySelector("#score");
-const timeText = document.querySelector("#time");
-const message = document.querySelector("#message");
-const start = document.querySelector("#start");
+  <script>
+    const board = document.querySelector("#board");
+    const scoreText = document.querySelector("#score");
+    const timeText = document.querySelector("#time");
+    const message = document.querySelector("#message");
+    const start = document.querySelector("#start");
 
-let score = 0, time = 30, playing = false;
-let active = -1, spawnTimer, clockTimer;
+    const cats = [
+      "cat-grey.png",
+      "cat-white.png",
+      "cat-orange.png",
+      "cat-calico.png",
+      "cat-grumpy.png",
+      "cat-cream.png"
+    ];
 
-for (let i = 0; i < 9; i++) {
-  const hole = document.createElement("button");
-  hole.className = "hole";
-  hole.textContent = "⬛";
-  hole.setAttribute("aria-label", "Empty hole");
+    let score = 0;
+    let time = 30;
+    let playing = false;
+    let active = -1;
+    let spawnTimer;
+    let clockTimer;
 
-  hole.addEventListener("click", () => {
-    if (!playing || i !== active) return;
-    score++;
-    scoreText.textContent = String(score).padStart(6, "0");
-    message.textContent = "BONKKKK!! +1";
-    hideCat();
-  });
+    // Create the 9 arcade holes
+    for (let i = 0; i < 9; i++) {
+      const hole = document.createElement("button");
+      hole.className = "hole";
+      hole.textContent = "⬛";
+      hole.setAttribute("aria-label", "Empty hole");
 
-  board.appendChild(hole);
-}
+      hole.addEventListener("click", () => {
+        if (!playing || i !== active) return;
 
-function hideCat() {
-  [...board.children].forEach(h => h.textContent = "⬛");
-  active = -1;
-}
-function popCat() {
-  hideCat();
+        score++;
+        scoreText.textContent = String(score).padStart(6, "0");
+        message.textContent = "BONKKKK!! +1";
 
-  const holes = document.querySelectorAll(".hole");
-  const randomHole = Math.floor(Math.random() * holes.length);
-  const hole = holes[randomHole];
+        hideCat();
+      });
 
-  const cats = [
-    "cat-grey.png",
-    "cat-white.png",
-    "cat-orange.png",
-    "cat-calico.png",
-    "cat-grumpy.png",
-    "cat-cream.png"
-  ];
+      board.appendChild(hole);
+    }
 
-  const randomCat = cats[Math.floor(Math.random() * cats.length)];
+    function hideCat() {
+      [...board.children].forEach(hole => {
+        hole.innerHTML = "⬛";
+        hole.classList.remove("active");
+      });
 
-  hole.innerHTML = `<img src="images/${randomCat}" class="cat-sprite" alt="Pixel cat">`;
-  hole.classList.add("active");
-}
+      active = -1;
+    }
 
+    function popCat() {
+      hideCat();
 
-function endGame() {
-  playing = false;
-  clearTimeout(spawnTimer);
-  clearInterval(clockTimer);
-  hideCat();
-  message.textContent = "GAME OVER! SCORE: " + score;
-  start.textContent = "PLAY AGAIN";
-}
+      const holes = [...board.children];
+      const randomHole = Math.floor(Math.random() * holes.length);
+      const hole = holes[randomHole];
 
-start.addEventListener("click", () => {
-  clearTimeout(spawnTimer);
-  clearInterval(clockTimer);
-  score = 0;
-  time = 30;
-  playing = true;
-  scoreText.textContent = "000000";
-  timeText.textContent = time;
-  message.textContent = "WHACK THAT CAT!";
-  start.textContent = "RESTART";
-  popCat();
+      const randomCat = cats[Math.floor(Math.random() * cats.length)];
 
-  clockTimer = setInterval(() => {
-    timeText.textContent = --time;
-    if (time <= 0) endGame();
-  }, 1000);
-});
-</script>
+      active = randomHole;
+
+      const img = document.createElement("img");
+      img.src = "images/" + randomCat;
+      img.alt = "Pixel cat";
+      img.className = "cat-sprite";
+
+      img.onerror = () => {
+        message.textContent = "CAT IMAGE NOT FOUND: " + randomCat;
+      };
+
+      hole.replaceChildren(img);
+      hole.classList.add("active");
+
+      // Make the next cat appear
+      const delay = Math.max(450, 1100 - score * 25);
+      spawnTimer = setTimeout(popCat, delay);
+    }
+
+    function endGame() {
+      playing = false;
+      clearTimeout(spawnTimer);
+      clearInterval(clockTimer);
+      hideCat();
+
+      message.textContent = "GAME OVER! SCORE: " + score;
+      start.textContent = "PLAY AGAIN";
+    }
+
+    start.addEventListener("click", () => {
+      clearTimeout(spawnTimer);
+      clearInterval(clockTimer);
+
+      score = 0;
+      time = 30;
+      playing = true;
+
+      scoreText.textContent = "000000";
+      timeText.textContent = time;
+      message.textContent = "WHACK THAT CAT!";
+      start.textContent = "RESTART";
+
+      popCat();
+
+      clockTimer = setInterval(() => {
+        time--;
+        timeText.textContent = time;
+
+        if (time <= 0) {
+          endGame();
+        }
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
+
