@@ -52,14 +52,28 @@ function hideCat() {
   [...board.children].forEach(h => h.textContent = "⬛");
   active = -1;
 }
-
 function popCat() {
-  if (!playing) return;
   hideCat();
-  active = Math.floor(Math.random() * 9);
-  board.children[active].textContent = "🐱";
-  spawnTimer = setTimeout(popCat, Math.max(450, 950 - score * 8));
+
+  const holes = document.querySelectorAll(".hole");
+  const randomHole = Math.floor(Math.random() * holes.length);
+  const hole = holes[randomHole];
+
+  const cats = [
+    "cat-grey.png",
+    "cat-white.png",
+    "cat-orange.png",
+    "cat-calico.png",
+    "cat-grumpy.png",
+    "cat-cream.png"
+  ];
+
+  const randomCat = cats[Math.floor(Math.random() * cats.length)];
+
+  hole.innerHTML = `<img src="images/${randomCat}" class="cat-sprite" alt="Pixel cat">`;
+  hole.classList.add("active");
 }
+
 
 function endGame() {
   playing = false;
