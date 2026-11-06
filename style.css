@@ -1,16 +1,22 @@
+
 * {
   box-sizing: border-box;
 }
 
 body {
-  background: #080018;
-  color: #00ffff;
-  font-family: "Courier New", monospace;
-  text-align: center;
   margin: 0;
-  padding: 20px;
-  text-shadow: 0 0 6px #00ffff;
+  min-height: 100vh;
+  padding: 25px 12px;
+  background:
+    radial-gradient(ellipse at center, #24104b 0%, #090515 65%, #030208 100%);
+  color: #fff;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 8px #45f5ff;
+  overflow-x: hidden;
 }
+
+/* CRT scanlines */
 body::after {
   content: "";
   position: fixed;
@@ -21,83 +27,106 @@ body::after {
     to bottom,
     transparent 0px,
     transparent 3px,
-    #00000025 4px
+    #00000035 4px
   );
 }
 
 h1 {
-  color: #ffdf45;
-  font-size: clamp(30px, 7vw, 56px);
+  margin: 12px 0;
+  color: #ff35dc;
+  font-size: clamp(36px, 8vw, 65px);
   font-weight: 900;
-  text-shadow: 4px 4px #b52c72;
-  margin: 10px 0;
+  letter-spacing: 5px;
+  text-shadow:
+    4px 4px #4821a1,
+    0 0 15px #ff35dc,
+    0 0 35px #ff35dc;
 }
 
 h2 {
-  color: #49f5e8;
-  letter-spacing: 4px;
+  color: #45f5ff;
+  letter-spacing: 7px;
+  text-shadow: 0 0 15px #45f5ff;
 }
 
 .stats {
   display: flex;
   justify-content: center;
-  gap: 35px;
-  margin: 22px;
-  color: #ffdf45;
+  gap: 45px;
+  margin: 28px auto;
+  color: #ffe65b;
   font-weight: bold;
+  font-size: 18px;
+}
+
+#score, #time {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 28px;
+  color: white;
 }
 
 #board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  width: min(100%, 420px);
-  margin: auto;
-  padding: 10px;
-  background: #131326;
-  border: 4px solid #ffdf45;
-  box-shadow: 6px 6px #b52c72;
+  gap: 12px;
+  width: min(100%, 440px);
+  margin: 25px auto;
+  padding: 14px;
+  background: #100b24;
+  border: 4px solid #ff35dc;
+  box-shadow:
+    0 0 12px #ff35dc,
+    0 0 30px #4821a1,
+    inset 0 0 20px #4821a1;
 }
 
 .hole {
   height: clamp(75px, 20vw, 105px);
   min-width: 0;
   padding: 0;
-  background: #080812;
-  border: 3px solid #555575;
+  background: #080817;
+  border: 3px solid #45f5ff;
   border-radius: 0;
-  font-size: clamp(30px, 9vw, 45px);
+  box-shadow: inset 0 0 15px #202060;
+  color: white;
+  font-size: clamp(35px, 9vw, 48px);
   cursor: pointer;
   touch-action: manipulation;
+  transition: 0.1s;
 }
 
 .hole:hover {
-  border-color: #49f5e8;
+  background: #201044;
+  border-color: #ff35dc;
+  box-shadow: 0 0 15px #ff35dc;
 }
 
 .hole:active {
-  background: #272744;
+  transform: scale(0.94);
 }
 
 #start {
-  margin: 25px 10px;
-  padding: 14px 22px;
-  color: #090914;
-  background: #ffdf45;
-  border: 4px solid #fff4bd;
+  margin: 20px;
+  padding: 16px 30px;
+  color: #080817;
+  background: #ffe65b;
+  border: 4px solid white;
   border-radius: 0;
-  box-shadow: 5px 5px #b52c72;
-  font: bold 18px "Courier New", monospace;
+  box-shadow: 5px 5px #ff35dc, 0 0 20px #ffe65b;
+  font: bold 19px "Courier New", monospace;
   cursor: pointer;
 }
 
 #start:active {
   transform: translate(3px, 3px);
-  box-shadow: 2px 2px #b52c72;
+  box-shadow: 2px 2px #ff35dc;
 }
 
 #message {
   min-height: 24px;
-  color: #49f5e8;
+  color: #45f5ff;
   font-weight: bold;
+  letter-spacing: 2px;
 }
+
