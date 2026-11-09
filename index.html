@@ -8,7 +8,68 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* CAT POP + NEON ANIMATION */
+    /* ARCADE LAYOUT */
+    .game-layout {
+      width: min(100% - 24px, 850px);
+      margin: 25px auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 190px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .game-area {
+      min-width: 0;
+    }
+
+    .arcade-hud {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      background: #17102d;
+      border: 3px solid #6c63ff;
+      box-shadow: 0 0 15px #6c63ff, inset 0 0 12px #32145b;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    .hud-title {
+      color: #ffd166;
+      font-size: 19px;
+      font-weight: bold;
+      text-shadow: 0 0 8px #ffd166;
+      margin-bottom: 4px;
+    }
+
+    .hud-card {
+      padding: 12px 5px;
+      background: #241442;
+      border: 2px solid #ff35dc;
+      box-shadow: 0 0 8px #ff35dc;
+    }
+
+    .hud-label {
+      font-size: 12px;
+      color: #48f7ff;
+      letter-spacing: 2px;
+    }
+
+    .hud-value {
+      display: block;
+      margin-top: 6px;
+      font-size: 25px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 9px #48f7ff;
+      overflow-wrap: anywhere;
+    }
+
+    #message {
+      margin: 15px 0;
+    }
+
+    /* KEEP THE CAT POP ANIMATION */
     .hole.active .cat-sprite {
       animation: cat-pop 0.3s ease-out,
                  cat-bounce 0.8s ease-in-out 0.3s infinite alternate;
@@ -34,37 +95,91 @@
       to { transform: translateY(-7px); }
     }
 
-    /* BONKED CAT EFFECT */
+    /* BONKED CAT ANIMATION */
     .hole.active .bonked-sprite {
       animation: bonk-flash 0.35s ease-out;
       filter: drop-shadow(0 0 12px #ffd166);
     }
 
     @keyframes bonk-flash {
-      0% { transform: scale(0.5) rotate(-12deg); opacity: 0; }
-      60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
-      100% { transform: scale(1) rotate(0); opacity: 1; }
+      0% {
+        transform: scale(0.5) rotate(-12deg);
+        opacity: 0;
+      }
+      60% {
+        transform: scale(1.15) rotate(8deg);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+      }
+    }
+
+    /* SMALL SCREEN LAYOUT */
+    @media (max-width: 600px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .arcade-hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hud-title {
+        grid-column: 1 / -1;
+      }
     }
   </style>
 </head>
 
 <body>
+
   <h1>WHACK-A-CAT</h1>
   <h2>INSERT COIN</h2>
 
-  <div class="stats">
-    <div>SCORE<br><span id="score">000000</span></div>
-    <div>TIME<br><span id="time">30</span></div>
-  </div>
+  <main class="game-layout">
 
-  <div id="board"></div>
-  <div id="message">PREPARE TO BONK!</div>
-  <button id="start">START GAME</button>
+    <section class="game-area">
+      <div id="board"></div>
+
+      <div id="message">PREPARE TO BONK!</div>
+
+      <button id="start">START GAME</button>
+    </section>
+
+    <aside class="arcade-hud">
+      <div class="hud-title">PLAYER STATS</div>
+
+      <div class="hud-card">
+        <div class="hud-label">SCORE</div>
+        <span class="hud-value" id="score">000000</span>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-label">HIGH SCORE</div>
+        <span class="hud-value" id="highScore">000000</span>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-label">TIME</div>
+        <span class="hud-value" id="time">30</span>
+      </div>
+
+      <div class="hud-card">
+        <div class="hud-label">COINS</div>
+        <span class="hud-value" id="coins">0</span>
+      </div>
+    </aside>
+
+  </main>
 
   <script>
     const board = document.querySelector("#board");
     const scoreText = document.querySelector("#score");
+    const highScoreText = document.querySelector("#highScore");
     const timeText = document.querySelector("#time");
+    const coinsText = document.querySelector("#coins");
     const message = document.querySelector("#message");
     const start = document.querySelector("#start");
 
@@ -77,6 +192,10 @@
       "cat-cream.png"
     ];
 
+    // LOAD SAVED PLAYER DATA
+    let highScore = Number(localStorage.getItem("wacHighScore")) || 0;
+    let coins = Number(localStorage.getItem("wacCoins")) || 0;
+
     let score = 0;
     let time = 30;
     let playing = false;
@@ -84,7 +203,10 @@
     let spawnTimer;
     let clockTimer;
 
-    // CREATE 9 ARCADE HOLES
+    highScoreText.textContent = String(highScore).padStart(6, "0");
+    coinsText.textContent = coins;
+
+    // CREATE THE 9 ARCADE HOLES
     for (let i = 0; i < 9; i++) {
       const hole = document.createElement("button");
       hole.className = "hole";
@@ -94,16 +216,32 @@
       hole.addEventListener("click", () => {
         if (!playing || i !== active) return;
 
-        // SCORE THE BONK
+        // SCORE AND COINS
         score++;
+        coins++;
+
         scoreText.textContent = String(score).padStart(6, "0");
+        coinsText.textContent = coins;
+
+        // SAVE COINS
+        localStorage.setItem("wacCoins", coins);
+
+        // UPDATE HIGH SCORE
+        if (score > highScore) {
+          highScore = score;
+          highScoreText.textContent =
+            String(highScore).padStart(6, "0");
+
+          localStorage.setItem("wacHighScore", highScore);
+        }
+
         message.textContent = "BONKKKK!! +1";
 
-        // STOP THE CURRENT CAT
+        // STOP THE NORMAL CAT
         active = -1;
         clearTimeout(spawnTimer);
 
-        // SHOW THE BONKED CAT
+        // SHOW BONKED CAT
         const bonked = document.createElement("img");
         bonked.src = "images/cat-bonked.png";
         bonked.alt = "Bonked cat";
@@ -111,7 +249,7 @@
 
         hole.replaceChildren(bonked);
 
-        // REMOVE BONKED CAT, THEN SPAWN ANOTHER
+        // REMOVE BONKED CAT AND SPAWN THE NEXT CAT
         spawnTimer = setTimeout(() => {
           hideCat();
 
@@ -142,7 +280,8 @@
       const randomHole = Math.floor(Math.random() * holes.length);
       const hole = holes[randomHole];
 
-      const randomCat = cats[Math.floor(Math.random() * cats.length)];
+      const randomCat =
+        cats[Math.floor(Math.random() * cats.length)];
 
       active = randomHole;
 
@@ -164,14 +303,17 @@
 
     function endGame() {
       playing = false;
+
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
+
       hideCat();
 
       message.textContent = "GAME OVER! SCORE: " + score;
       start.textContent = "PLAY AGAIN";
     }
 
+    // START OR RESTART GAME
     start.addEventListener("click", () => {
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
@@ -182,6 +324,7 @@
 
       scoreText.textContent = "000000";
       timeText.textContent = time;
+
       message.textContent = "WHACK THAT CAT!";
       start.textContent = "RESTART";
 
@@ -197,5 +340,6 @@
       }, 1000);
     });
   </script>
+
 </body>
 </html>
