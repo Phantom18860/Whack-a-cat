@@ -6,6 +6,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WHACK-A-CAT</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* CAT POP + NEON ANIMATION */
+    .hole.active .cat-sprite {
+      animation: cat-pop 0.3s ease-out,
+                 cat-bounce 0.8s ease-in-out 0.3s infinite alternate;
+      filter: drop-shadow(0 0 8px #ff35dc);
+    }
+
+    @keyframes cat-pop {
+      0% {
+        transform: translateY(35px) scale(0.3);
+        opacity: 0;
+      }
+      70% {
+        transform: translateY(-5px) scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes cat-bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-7px); }
+    }
+
+    /* BONKED CAT EFFECT */
+    .hole.active .bonked-sprite {
+      animation: bonk-flash 0.35s ease-out;
+      filter: drop-shadow(0 0 12px #ffd166);
+    }
+
+    @keyframes bonk-flash {
+      0% { transform: scale(0.5) rotate(-12deg); opacity: 0; }
+      60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+  </style>
 </head>
 
 <body>
@@ -44,7 +84,7 @@
     let spawnTimer;
     let clockTimer;
 
-    // Create the 9 arcade holes
+    // CREATE 9 ARCADE HOLES
     for (let i = 0; i < 9; i++) {
       const hole = document.createElement("button");
       hole.className = "hole";
@@ -54,11 +94,31 @@
       hole.addEventListener("click", () => {
         if (!playing || i !== active) return;
 
+        // SCORE THE BONK
         score++;
         scoreText.textContent = String(score).padStart(6, "0");
         message.textContent = "BONKKKK!! +1";
 
-        hideCat();
+        // STOP THE CURRENT CAT
+        active = -1;
+        clearTimeout(spawnTimer);
+
+        // SHOW THE BONKED CAT
+        const bonked = document.createElement("img");
+        bonked.src = "images/cat-bonked.png";
+        bonked.alt = "Bonked cat";
+        bonked.className = "cat-sprite bonked-sprite";
+
+        hole.replaceChildren(bonked);
+
+        // REMOVE BONKED CAT, THEN SPAWN ANOTHER
+        spawnTimer = setTimeout(() => {
+          hideCat();
+
+          if (playing) {
+            popCat();
+          }
+        }, 350);
       });
 
       board.appendChild(hole);
@@ -74,6 +134,8 @@
     }
 
     function popCat() {
+      if (!playing) return;
+
       hideCat();
 
       const holes = [...board.children];
@@ -96,7 +158,6 @@
       hole.replaceChildren(img);
       hole.classList.add("active");
 
-      // Make the next cat appear
       const delay = Math.max(450, 1100 - score * 25);
       spawnTimer = setTimeout(popCat, delay);
     }
