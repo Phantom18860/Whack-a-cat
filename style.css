@@ -499,3 +499,84 @@ body {
     animation: none;
   }
 }
+
+/* COMPACT ARCADE CABINET */
+body {
+  padding: 8px 10px;
+}
+
+.arcade-machine {
+  width: min(100%, 900px);
+  padding: 10px;
+}
+
+.machine-header {
+  margin-bottom: 9px;
+  padding: 7px;
+}
+
+.marquee {
+  padding: 7px;
+}
+
+.marquee h1 {
+  font-size: clamp(27px, 4.5vw, 46px);
+  margin: 3px 0;
+}
+
+.marquee p {
+  margin: 3px 0;
+}
+
+.machine-screen {
+  gap: 9px;
+  padding: 9px;
+}
+
+.side-panel {
+  gap: 8px;
+  padding: 8px 6px;
+}
+
+.panel-heading {
+  padding: 7px 3px;
+}
+
+.stat-box {
+  padding: 9px 4px;
+}
+
+.stat-box strong {
+  font-size: clamp(17px, 2vw, 23px);
+}
+
+.panel-sticker {
+  padding: 8px 3px;
+  font-size: 14px;
+}
+
+.game-area {
+  padding: 9px;
+}
+
+#board {
+  width: min(100%, 360px);
+  gap: 7px;
+  padding: 9px;
+  margin-bottom: 9px;
+}
+
+#message {
+  margin: 7px 0;
+  min-height: 22px;
+}
+
+#start {
+  margin: 5px auto;
+  padding: 11px;
+}
+
+.machine-controls {
+  margin-top: 9px;
+  padding: 8px;
+}
