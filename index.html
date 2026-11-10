@@ -99,7 +99,7 @@
 
   </main>
 
-  <!-- SETTINGS WINDOW -->
+  <!-- SETTINGS -->
   <div id="settingsModal" class="settings-modal">
     <div class="settings-box">
       <h2>⚙️ SETTINGS</h2>
@@ -112,7 +112,7 @@
       <hr>
 
       <button id="musicToggle">🎵 MUSIC: ON</button>
-      <p class="settings-note">Music preference saved for later.</p>
+      <p class="settings-note">Original arcade soundtrack</p>
 
       <hr>
 
@@ -125,7 +125,10 @@
   </div>
 
   <script>
+    // =========================
     // GAME ELEMENTS
+    // =========================
+
     const board = document.querySelector("#board");
     const scoreText = document.querySelector("#score");
     const highScoreText = document.querySelector("#highScore");
@@ -134,117 +137,10 @@
     const message = document.querySelector("#message");
     const start = document.querySelector("#start");
 
-    // SETTINGS ELEMENTS
     const settingsModal = document.querySelector("#settingsModal");
     const playerNameInput = document.querySelector("#playerName");
     const playerDisplay = document.querySelector("#playerDisplay");
     const musicToggle = document.querySelector("#musicToggle");
-
-    // SAVED DATA
-    let highScore = Number(localStorage.getItem("wacHighScore")) || 0;
-    let coins = Number(localStorage.getItem("wacCoins")) || 0;
-
-    let score = 0;
-    let time = 30;
-    let playing = false;
-    let active = -1;
-    let spawnTimer;
-    let clockTimer;
-
-    let musicEnabled = localStorage.getItem("wacMusic") !== "off";
-// ===== ORIGINAL ARCADE MUSIC =====
-let audioContext = null;
-let musicTimer = null;
-let musicStep = 0;
-
-const melody = [
-  523, 659, 784, 659,
-  587, 698, 880, 698,
-  523, 659, 784, 1047,
-  784, 659, 587, 523
-];
-
-function playNote(frequency, duration = 0.13, volume = 0.045) {
-  if (!audioContext || !musicEnabled) return;
-
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = "square";
-  oscillator.frequency.value = frequency;
-
-  gain.gain.setValueAtTime(volume, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(
-    0.001,
-    audioContext.currentTime + duration
-  );
-
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration);
-}
-
-function musicBeat() {
-  if (!musicEnabled || !playing) return;
-
-  const note = melody[musicStep % melody.length];
-  playNote(note);
-
-  if (musicStep % 4 === 0) {
-    playNote(130, 0.12, 0.025);
-  }
-
-  musicStep++;
-}
-
-async function startMusic() {
-  if (!musicEnabled || !playing) return;
-
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  await audioContext.resume();
-
-  clearInterval(musicTimer);
-  musicStep = 0;
-  musicBeat();
-  musicTimer = setInterval(musicBeat, 180);
-}
-
-function stopMusic() {
-  clearInterval(musicTimer);
-  musicTimer = null;
-}
-
-function playBonkSound() {
-  if (!musicEnabled) return;
-
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  audioContext.resume();
-  playNote(180, 0.12, 0.09);
-  playNote(90, 0.18, 0.07);
-}
-    const savedName = localStorage.getItem("wacPlayerName") || "PLAYER 1";
-
-    function updatePlayerName() {
-      const name = localStorage.getItem("wacPlayerName") || "PLAYER 1";
-      playerDisplay.textContent = name.toUpperCase();
-    }
-
-    function updateMusicButton() {
-      musicToggle.textContent = musicEnabled
-        ? "🎵 MUSIC: ON"
-        : "🔇 MUSIC: OFF";
-
-      // This setting will be used when we add actual music.
-      window.wacMusicEnabled = musicEnabled;
-    }
 
     const cats = [
       "cat-grey.png",
@@ -255,21 +151,165 @@ function playBonkSound() {
       "cat-cream.png"
     ];
 
+    // =========================
+    // SAVED DATA
+    // =========================
+
+    let highScore = Number(localStorage.getItem("wacHighScore")) || 0;
+    let coins = Number(localStorage.getItem("wacCoins")) || 0;
+
+    let score = 0;
+    let time = 30;
+    let playing = false;
+    let active = -1;
+
+    let spawnTimer;
+    let clockTimer;
+
+    let musicEnabled = localStorage.getItem("wacMusic") !== "off";
+
     const formatScore = value => String(value).padStart(6, "0");
+
+    function updatePlayerName() {
+      const name = localStorage.getItem("wacPlayerName") || "PLAYER 1";
+      playerDisplay.textContent = name.toUpperCase();
+    }
 
     highScoreText.textContent = formatScore(highScore);
     coinsText.textContent = coins;
     updatePlayerName();
+
+    // =========================
+    // AUDIO SYSTEM
+    // =========================
+
+    let audioContext = null;
+    let musicTimer = null;
+    let musicStep = 0;
+
+    const melody = [
+      523, 659, 784, 659,
+      587, 698, 880, 698,
+      523, 659, 784, 1047,
+      784, 659, 587, 523
+    ];
+
+    function getAudioContext() {
+      if (!audioContext) {
+        const AudioContextClass =
+          window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+          message.textContent = "Audio is not supported by this browser.";
+          return null;
+        }
+
+        audioContext = new AudioContextClass();
+      }
+
+      return audioContext;
+    }
+
+    function playTone(frequency, duration = 0.13, volume = 0.04, type = "square") {
+      if (!audioContext || !musicEnabled) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.value = frequency;
+
+      gain.gain.setValueAtTime(volume, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+      );
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    function musicBeat() {
+      if (!musicEnabled || !playing) return;
+
+      const note = melody[musicStep % melody.length];
+
+      playTone(note, 0.14, 0.035);
+
+      if (musicStep % 4 === 0) {
+        playTone(130, 0.12, 0.025, "triangle");
+      }
+
+      musicStep++;
+    }
+
+    async function startMusic() {
+      if (!musicEnabled || !playing) return;
+
+      const audio = getAudioContext();
+      if (!audio) return;
+
+      try {
+        await audio.resume();
+      } catch (error) {
+        console.log("Audio could not start:", error);
+        return;
+      }
+
+      if (!musicEnabled || !playing) return;
+
+      stopMusic();
+      musicStep = 0;
+      musicBeat();
+
+      musicTimer = setInterval(musicBeat, 180);
+    }
+
+    function stopMusic() {
+      clearInterval(musicTimer);
+      musicTimer = null;
+    }
+
+    async function playBonkSound() {
+      if (!musicEnabled) return;
+
+      const audio = getAudioContext();
+      if (!audio) return;
+
+      try {
+        await audio.resume();
+        playTone(180, 0.12, 0.08, "square");
+        playTone(90, 0.18, 0.06, "triangle");
+      } catch (error) {
+        console.log("Bonk sound unavailable:", error);
+      }
+    }
+
+    function updateMusicButton() {
+      musicToggle.textContent = musicEnabled
+        ? "🎵 MUSIC: ON"
+        : "🔇 MUSIC: OFF";
+
+      window.wacMusicEnabled = musicEnabled;
+    }
+
     updateMusicButton();
 
-    // CREATE THE NINE HOLES
+    // =========================
+    // CREATE NINE HOLES
+    // =========================
+
     for (let i = 0; i < 9; i++) {
       const hole = document.createElement("button");
+
       hole.className = "hole";
       hole.textContent = "⬛";
       hole.setAttribute("aria-label", "Empty hole");
 
-      hole.addEventListener("click", () => {
+      hole.addEventListener("click", async () => {
         if (!playing || i !== active) return;
 
         score++;
@@ -288,6 +328,8 @@ function playBonkSound() {
 
         message.textContent = "BONKKKK!! +1";
 
+        playBonkSound();
+
         active = -1;
         clearTimeout(spawnTimer);
 
@@ -301,12 +343,18 @@ function playBonkSound() {
         spawnTimer = setTimeout(() => {
           hideCat();
 
-          if (playing) popCat();
+          if (playing) {
+            popCat();
+          }
         }, 350);
       });
 
       board.appendChild(hole);
     }
+
+    // =========================
+    // CAT GAME FUNCTIONS
+    // =========================
 
     function hideCat() {
       [...board.children].forEach(hole => {
@@ -332,6 +380,7 @@ function playBonkSound() {
       active = randomHole;
 
       const img = document.createElement("img");
+
       img.src = "images/" + randomCat;
       img.alt = "Pixel cat";
       img.className = "cat-sprite";
@@ -345,8 +394,13 @@ function playBonkSound() {
       hole.setAttribute("aria-label", "Whack the cat!");
 
       const delay = Math.max(450, 1100 - score * 25);
+
       spawnTimer = setTimeout(popCat, delay);
     }
+
+    // =========================
+    // END GAME
+    // =========================
 
     function endGame() {
       playing = false;
@@ -354,16 +408,22 @@ function playBonkSound() {
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
 
+      stopMusic();
       hideCat();
 
       message.textContent = "GAME OVER! SCORE: " + score;
       start.textContent = "PLAY AGAIN";
     }
 
+    // =========================
     // START / RESTART GAME
-    start.addEventListener("click", () => {
+    // =========================
+
+    start.addEventListener("click", async () => {
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
+
+      stopMusic();
 
       score = 0;
       time = 30;
@@ -375,17 +435,25 @@ function playBonkSound() {
       message.textContent = "WHACK THAT CAT!";
       start.textContent = "RESTART";
 
+      // Starting music after the player's click
+      await startMusic();
+
       popCat();
 
       clockTimer = setInterval(() => {
         time--;
         timeText.textContent = time;
 
-        if (time <= 0) endGame();
+        if (time <= 0) {
+          endGame();
+        }
       }, 1000);
     });
 
-    // OPEN SETTINGS
+    // =========================
+    // SETTINGS MENU
+    // =========================
+
     document.querySelector("#settingsBtn").addEventListener("click", () => {
       playerNameInput.value =
         localStorage.getItem("wacPlayerName") || "PLAYER 1";
@@ -393,7 +461,6 @@ function playBonkSound() {
       settingsModal.style.display = "flex";
     });
 
-    // CLOSE SETTINGS
     document.querySelector("#closeSettings").addEventListener("click", () => {
       settingsModal.style.display = "none";
     });
@@ -414,8 +481,8 @@ function playBonkSound() {
       message.textContent = "WELCOME, " + name.toUpperCase() + "!";
     });
 
-    // MUSIC PREFERENCE
-    musicToggle.addEventListener("click", () => {
+    // MUSIC ON / OFF
+    musicToggle.addEventListener("click", async () => {
       musicEnabled = !musicEnabled;
 
       localStorage.setItem(
@@ -424,22 +491,32 @@ function playBonkSound() {
       );
 
       updateMusicButton();
+
+      if (musicEnabled && playing) {
+        await startMusic();
+      } else {
+        stopMusic();
+      }
     });
 
     // RESET DATA
     document.querySelector("#resetData").addEventListener("click", () => {
       const confirmed = confirm(
-        "RESET ALL GAME DATA?\n\nThis will erase your coins, high score and player name."
+        "RESET ALL GAME DATA?\n\nThis erases coins, high score and player name."
       );
 
       if (!confirmed) return;
 
+      playing = false;
+
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
+      stopMusic();
 
       localStorage.removeItem("wacHighScore");
       localStorage.removeItem("wacCoins");
       localStorage.removeItem("wacPlayerName");
+      localStorage.removeItem("wacMusic");
 
       location.reload();
     });
