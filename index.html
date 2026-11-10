@@ -6,171 +6,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WHACK-A-CAT</title>
   <link rel="stylesheet" href="style.css">
-
-  <style>
-    /* ARCADE LAYOUT */
-    .game-layout {
-      width: min(100% - 24px, 850px);
-      margin: 25px auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 190px;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .game-area {
-      min-width: 0;
-    }
-
-    .arcade-hud {
-      display: grid;
-      gap: 12px;
-      padding: 14px;
-      background: #17102d;
-      border: 3px solid #6c63ff;
-      box-shadow: 0 0 15px #6c63ff, inset 0 0 12px #32145b;
-      color: white;
-      font-family: monospace;
-      text-align: center;
-    }
-
-    .hud-title {
-      color: #ffd166;
-      font-size: 19px;
-      font-weight: bold;
-      text-shadow: 0 0 8px #ffd166;
-      margin-bottom: 4px;
-    }
-
-    .hud-card {
-      padding: 12px 5px;
-      background: #241442;
-      border: 2px solid #ff35dc;
-      box-shadow: 0 0 8px #ff35dc;
-    }
-
-    .hud-label {
-      font-size: 12px;
-      color: #48f7ff;
-      letter-spacing: 2px;
-    }
-
-    .hud-value {
-      display: block;
-      margin-top: 6px;
-      font-size: 25px;
-      font-weight: bold;
-      color: white;
-      text-shadow: 0 0 9px #48f7ff;
-      overflow-wrap: anywhere;
-    }
-
-    #message {
-      margin: 15px 0;
-    }
-
-    /* KEEP THE CAT POP ANIMATION */
-    .hole.active .cat-sprite {
-      animation: cat-pop 0.3s ease-out,
-                 cat-bounce 0.8s ease-in-out 0.3s infinite alternate;
-      filter: drop-shadow(0 0 8px #ff35dc);
-    }
-
-    @keyframes cat-pop {
-      0% {
-        transform: translateY(35px) scale(0.3);
-        opacity: 0;
-      }
-      70% {
-        transform: translateY(-5px) scale(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes cat-bounce {
-      from { transform: translateY(0); }
-      to { transform: translateY(-7px); }
-    }
-
-    /* BONKED CAT ANIMATION */
-    .hole.active .bonked-sprite {
-      animation: bonk-flash 0.35s ease-out;
-      filter: drop-shadow(0 0 12px #ffd166);
-    }
-
-    @keyframes bonk-flash {
-      0% {
-        transform: scale(0.5) rotate(-12deg);
-        opacity: 0;
-      }
-      60% {
-        transform: scale(1.15) rotate(8deg);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1) rotate(0);
-        opacity: 1;
-      }
-    }
-
-    /* SMALL SCREEN LAYOUT */
-    @media (max-width: 600px) {
-      .game-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .arcade-hud {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .hud-title {
-        grid-column: 1 / -1;
-      }
-    }
-  </style>
 </head>
 
 <body>
+  <main class="arcade-machine">
 
-  <h1>WHACK-A-CAT</h1>
-  <h2>INSERT COIN</h2>
+    <header class="machine-header">
+      <div class="marquee">
+        <div class="marquee-lights">✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦</div>
+        <h1>WHACK-A-CAT</h1>
+        <p>THE ULTIMATE CAT BONKING GAME</p>
+        <div class="marquee-lights">✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦</div>
+      </div>
+    </header>
 
-  <main class="game-layout">
+    <section class="machine-screen">
 
-    <section class="game-area">
-      <div id="board"></div>
+      <aside class="side-panel left-panel">
+        <div class="panel-heading">PLAYER 1</div>
 
-      <div id="message">PREPARE TO BONK!</div>
+        <div class="stat-box">
+          <span class="stat-label">SCORE</span>
+          <strong id="score">000000</strong>
+        </div>
 
-      <button id="start">START GAME</button>
+        <div class="stat-box">
+          <span class="stat-label">HIGH SCORE</span>
+          <strong id="highScore">000000</strong>
+        </div>
+
+        <div class="panel-decoration">★ ★ ★</div>
+        <div class="panel-sticker">CAT<br>POWER!</div>
+      </aside>
+
+      <section class="game-area">
+        <div class="screen-top">
+          <span>★ CAT ARENA ★</span>
+          <span class="screen-indicator">● LIVE</span>
+        </div>
+
+        <div id="board"></div>
+
+        <div id="message" aria-live="polite">
+          READY TO BONK?
+        </div>
+
+        <button id="start">START GAME</button>
+      </section>
+
+      <aside class="side-panel right-panel">
+        <div class="panel-heading">GAME DATA</div>
+
+        <div class="stat-box">
+          <span class="stat-label">TIME LEFT</span>
+          <strong id="time">30</strong>
+        </div>
+
+        <div class="stat-box">
+          <span class="stat-label">COINS</span>
+          <strong id="coins">0</strong>
+        </div>
+
+        <div class="panel-decoration">♦ ♦ ♦</div>
+        <div class="panel-sticker sticker-right">BONK<br>MASTER!</div>
+      </aside>
+
     </section>
 
-    <aside class="arcade-hud">
-      <div class="hud-title">PLAYER STATS</div>
-
-      <div class="hud-card">
-        <div class="hud-label">SCORE</div>
-        <span class="hud-value" id="score">000000</span>
+    <footer class="machine-controls">
+      <div class="speaker">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
       </div>
 
-      <div class="hud-card">
-        <div class="hud-label">HIGH SCORE</div>
-        <span class="hud-value" id="highScore">000000</span>
+      <div class="control-center">
+        <div class="control-lights">
+          <i></i><i></i><i></i>
+        </div>
+        <p>WHACK • SCORE • REPEAT</p>
+        <div class="control-buttons">
+          <span class="button-red"></span>
+          <span class="button-yellow"></span>
+          <span class="button-blue"></span>
+        </div>
       </div>
 
-      <div class="hud-card">
-        <div class="hud-label">TIME</div>
-        <span class="hud-value" id="time">30</span>
+      <div class="speaker">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
       </div>
-
-      <div class="hud-card">
-        <div class="hud-label">COINS</div>
-        <span class="hud-value" id="coins">0</span>
-      </div>
-    </aside>
+    </footer>
 
   </main>
 
@@ -192,7 +117,6 @@
       "cat-cream.png"
     ];
 
-    // LOAD SAVED PLAYER DATA
     let highScore = Number(localStorage.getItem("wacHighScore")) || 0;
     let coins = Number(localStorage.getItem("wacCoins")) || 0;
 
@@ -203,10 +127,12 @@
     let spawnTimer;
     let clockTimer;
 
-    highScoreText.textContent = String(highScore).padStart(6, "0");
+    const formatScore = value => String(value).padStart(6, "0");
+
+    highScoreText.textContent = formatScore(highScore);
     coinsText.textContent = coins;
 
-    // CREATE THE 9 ARCADE HOLES
+    // CREATE THE NINE HOLES
     for (let i = 0; i < 9; i++) {
       const hole = document.createElement("button");
       hole.className = "hole";
@@ -216,32 +142,25 @@
       hole.addEventListener("click", () => {
         if (!playing || i !== active) return;
 
-        // SCORE AND COINS
         score++;
         coins++;
 
-        scoreText.textContent = String(score).padStart(6, "0");
+        scoreText.textContent = formatScore(score);
         coinsText.textContent = coins;
 
-        // SAVE COINS
         localStorage.setItem("wacCoins", coins);
 
-        // UPDATE HIGH SCORE
         if (score > highScore) {
           highScore = score;
-          highScoreText.textContent =
-            String(highScore).padStart(6, "0");
-
+          highScoreText.textContent = formatScore(highScore);
           localStorage.setItem("wacHighScore", highScore);
         }
 
         message.textContent = "BONKKKK!! +1";
 
-        // STOP THE NORMAL CAT
         active = -1;
         clearTimeout(spawnTimer);
 
-        // SHOW BONKED CAT
         const bonked = document.createElement("img");
         bonked.src = "images/cat-bonked.png";
         bonked.alt = "Bonked cat";
@@ -249,7 +168,6 @@
 
         hole.replaceChildren(bonked);
 
-        // REMOVE BONKED CAT AND SPAWN THE NEXT CAT
         spawnTimer = setTimeout(() => {
           hideCat();
 
@@ -264,8 +182,9 @@
 
     function hideCat() {
       [...board.children].forEach(hole => {
-        hole.innerHTML = "⬛";
+        hole.textContent = "⬛";
         hole.classList.remove("active");
+        hole.setAttribute("aria-label", "Empty hole");
       });
 
       active = -1;
@@ -296,6 +215,7 @@
 
       hole.replaceChildren(img);
       hole.classList.add("active");
+      hole.setAttribute("aria-label", "Whack the cat!");
 
       const delay = Math.max(450, 1100 - score * 25);
       spawnTimer = setTimeout(popCat, delay);
@@ -313,7 +233,6 @@
       start.textContent = "PLAY AGAIN";
     }
 
-    // START OR RESTART GAME
     start.addEventListener("click", () => {
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
@@ -322,7 +241,7 @@
       time = 30;
       playing = true;
 
-      scoreText.textContent = "000000";
+      scoreText.textContent = formatScore(score);
       timeText.textContent = time;
 
       message.textContent = "WHACK THAT CAT!";
@@ -340,6 +259,5 @@
       }, 1000);
     });
   </script>
-
 </body>
 </html>
