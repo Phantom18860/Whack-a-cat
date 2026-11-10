@@ -12,6 +12,8 @@
   <main class="arcade-machine">
 
     <header class="machine-header">
+      <button id="settingsBtn" class="settings-btn">⚙ SETTINGS</button>
+
       <div class="marquee">
         <div class="marquee-lights">✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦</div>
         <h1>WHACK-A-CAT</h1>
@@ -23,7 +25,7 @@
     <section class="machine-screen">
 
       <aside class="side-panel left-panel">
-        <div class="panel-heading">PLAYER 1</div>
+        <div class="panel-heading" id="playerDisplay">PLAYER 1</div>
 
         <div class="stat-box">
           <span class="stat-label">SCORE</span>
@@ -47,9 +49,7 @@
 
         <div id="board"></div>
 
-        <div id="message" aria-live="polite">
-          READY TO BONK?
-        </div>
+        <div id="message" aria-live="polite">READY TO BONK?</div>
 
         <button id="start">START GAME</button>
       </section>
@@ -99,7 +99,33 @@
 
   </main>
 
+  <!-- SETTINGS WINDOW -->
+  <div id="settingsModal" class="settings-modal">
+    <div class="settings-box">
+      <h2>⚙️ SETTINGS</h2>
+
+      <label for="playerName">PLAYER NAME</label>
+      <input id="playerName" maxlength="16" placeholder="PLAYER 1">
+
+      <button id="saveName">SAVE NAME</button>
+
+      <hr>
+
+      <button id="musicToggle">🎵 MUSIC: ON</button>
+      <p class="settings-note">Music preference saved for later.</p>
+
+      <hr>
+
+      <button id="resetData" class="danger-btn">
+        🗑 RESET GAME DATA
+      </button>
+
+      <button id="closeSettings">CLOSE</button>
+    </div>
+  </div>
+
   <script>
+    // GAME ELEMENTS
     const board = document.querySelector("#board");
     const scoreText = document.querySelector("#score");
     const highScoreText = document.querySelector("#highScore");
@@ -108,15 +134,13 @@
     const message = document.querySelector("#message");
     const start = document.querySelector("#start");
 
-    const cats = [
-      "cat-grey.png",
-      "cat-white.png",
-      "cat-orange.png",
-      "cat-calico.png",
-      "cat-grumpy.png",
-      "cat-cream.png"
-    ];
+    // SETTINGS ELEMENTS
+    const settingsModal = document.querySelector("#settingsModal");
+    const playerNameInput = document.querySelector("#playerName");
+    const playerDisplay = document.querySelector("#playerDisplay");
+    const musicToggle = document.querySelector("#musicToggle");
 
+    // SAVED DATA
     let highScore = Number(localStorage.getItem("wacHighScore")) || 0;
     let coins = Number(localStorage.getItem("wacCoins")) || 0;
 
@@ -127,10 +151,39 @@
     let spawnTimer;
     let clockTimer;
 
+    let musicEnabled = localStorage.getItem("wacMusic") !== "off";
+
+    const savedName = localStorage.getItem("wacPlayerName") || "PLAYER 1";
+
+    function updatePlayerName() {
+      const name = localStorage.getItem("wacPlayerName") || "PLAYER 1";
+      playerDisplay.textContent = name.toUpperCase();
+    }
+
+    function updateMusicButton() {
+      musicToggle.textContent = musicEnabled
+        ? "🎵 MUSIC: ON"
+        : "🔇 MUSIC: OFF";
+
+      // This setting will be used when we add actual music.
+      window.wacMusicEnabled = musicEnabled;
+    }
+
+    const cats = [
+      "cat-grey.png",
+      "cat-white.png",
+      "cat-orange.png",
+      "cat-calico.png",
+      "cat-grumpy.png",
+      "cat-cream.png"
+    ];
+
     const formatScore = value => String(value).padStart(6, "0");
 
     highScoreText.textContent = formatScore(highScore);
     coinsText.textContent = coins;
+    updatePlayerName();
+    updateMusicButton();
 
     // CREATE THE NINE HOLES
     for (let i = 0; i < 9; i++) {
@@ -171,9 +224,7 @@
         spawnTimer = setTimeout(() => {
           hideCat();
 
-          if (playing) {
-            popCat();
-          }
+          if (playing) popCat();
         }, 350);
       });
 
@@ -199,8 +250,7 @@
       const randomHole = Math.floor(Math.random() * holes.length);
       const hole = holes[randomHole];
 
-      const randomCat =
-        cats[Math.floor(Math.random() * cats.length)];
+      const randomCat = cats[Math.floor(Math.random() * cats.length)];
 
       active = randomHole;
 
@@ -233,6 +283,7 @@
       start.textContent = "PLAY AGAIN";
     }
 
+    // START / RESTART GAME
     start.addEventListener("click", () => {
       clearTimeout(spawnTimer);
       clearInterval(clockTimer);
@@ -253,10 +304,67 @@
         time--;
         timeText.textContent = time;
 
-        if (time <= 0) {
-          endGame();
-        }
+        if (time <= 0) endGame();
       }, 1000);
+    });
+
+    // OPEN SETTINGS
+    document.querySelector("#settingsBtn").addEventListener("click", () => {
+      playerNameInput.value =
+        localStorage.getItem("wacPlayerName") || "PLAYER 1";
+
+      settingsModal.style.display = "flex";
+    });
+
+    // CLOSE SETTINGS
+    document.querySelector("#closeSettings").addEventListener("click", () => {
+      settingsModal.style.display = "none";
+    });
+
+    settingsModal.addEventListener("click", event => {
+      if (event.target === settingsModal) {
+        settingsModal.style.display = "none";
+      }
+    });
+
+    // SAVE PLAYER NAME
+    document.querySelector("#saveName").addEventListener("click", () => {
+      const name = playerNameInput.value.trim() || "PLAYER 1";
+
+      localStorage.setItem("wacPlayerName", name);
+      updatePlayerName();
+
+      message.textContent = "WELCOME, " + name.toUpperCase() + "!";
+    });
+
+    // MUSIC PREFERENCE
+    musicToggle.addEventListener("click", () => {
+      musicEnabled = !musicEnabled;
+
+      localStorage.setItem(
+        "wacMusic",
+        musicEnabled ? "on" : "off"
+      );
+
+      updateMusicButton();
+    });
+
+    // RESET DATA
+    document.querySelector("#resetData").addEventListener("click", () => {
+      const confirmed = confirm(
+        "RESET ALL GAME DATA?\n\nThis will erase your coins, high score and player name."
+      );
+
+      if (!confirmed) return;
+
+      clearTimeout(spawnTimer);
+      clearInterval(clockTimer);
+
+      localStorage.removeItem("wacHighScore");
+      localStorage.removeItem("wacCoins");
+      localStorage.removeItem("wacPlayerName");
+
+      location.reload();
     });
   </script>
 </body>
