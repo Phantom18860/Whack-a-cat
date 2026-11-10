@@ -580,3 +580,80 @@ body {
   margin-top: 9px;
   padding: 8px;
 }
+
+/* ===== WHACK-A-CAT SETTINGS ===== */
+
+.machine-header {
+  position: relative;
+}
+
+.settings-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  padding: 9px 12px;
+  background: #ffd166;
+  color: #241600;
+  border: 3px solid #6b421e;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.settings-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.settings-box {
+  width: min(340px, 100%);
+  padding: 22px;
+  text-align: center;
+  background: #29213b;
+  color: white;
+  border: 5px solid #ffd166;
+  border-radius: 15px;
+  box-shadow: 0 0 25px #000;
+}
+
+.settings-box h2 {
+  color: #ffd166;
+}
+
+.settings-box input,
+.settings-box button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.settings-box input {
+  border: 2px solid #ffd166;
+}
+
+.settings-box button {
+  border: 2px solid #111;
+  background: #ffd166;
+  cursor: pointer;
+}
+
+.settings-box .danger-btn {
+  background: #ff6868;
+  color: #250000;
+}
+
+.settings-note {
+  font-size: 12px;
+  opacity: 0.75;
+}
